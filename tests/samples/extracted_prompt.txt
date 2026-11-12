@@ -1,0 +1,3 @@
+cyberpunk cyber forensic investigator, holographic UI, 8k resolution, photorealistic
+Negative prompt: cartoon, 3d, fake
+Steps: 35, Sampler: DPM++ 2M Karras, CFG scale: 7.5, Seed: 994821034, Model: dreamshaper_v8

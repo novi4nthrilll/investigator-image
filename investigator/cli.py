@@ -8,7 +8,8 @@ import click
 
 from investigator.modules.tamper.analyzer import TamperAnalyzer
 from investigator.modules.stego.analyzer import StegoAnalyzer
-from investigator.utils.reporting import print_tamper_report, print_stego_report, console
+from investigator.modules.ai_detect.analyzer import AIAuthenticator
+from investigator.utils.reporting import print_tamper_report, print_stego_report, print_ai_report, console
 
 
 @click.group()
@@ -74,6 +75,36 @@ def stego_cmd(image_path: str, extract_dir: str, dump_lsb: str, json_output: boo
             
     except Exception as e:
         console.print(f"[bold red]Steganography scan error:[/bold red] {e}", file=sys.stderr)
+        sys.exit(1)
+
+
+@main.command(name="ai")
+@click.argument("image_path", type=click.Path(exists=True, dir_okay=False, readable=True))
+@click.option("--fft-dump", "-f", type=click.Path(dir_okay=False, writable=True), default=None,
+              help="Path to dump and save 2D FFT frequency magnitude spectrum image.")
+@click.option("--extract-prompt", "-p", type=click.Path(dir_okay=False, writable=True), default=None,
+              help="Path to save extracted generation prompt / ComfyUI workflow JSON.")
+@click.option("--json-output", "--json", is_flag=True, default=False,
+              help="Output results as structured JSON.")
+def ai_cmd(image_path: str, fft_dump: str, extract_prompt: str, json_output: bool):
+    """Authenticate whether an image is AI-generated (Midjourney, DALL-E, SD, Flux) or real."""
+    try:
+        authenticator = AIAuthenticator()
+        with console.status("[bold yellow]Analyzing frequency spectrum & AI provenance...[/bold yellow]"):
+            result = authenticator.analyze(
+                image_path,
+                fft_dump_path=fft_dump,
+                extract_prompt_path=extract_prompt
+            )
+            
+        if json_output:
+            clean_result = dict(result)
+            click.echo(json.dumps(clean_result, indent=2, default=str))
+        else:
+            print_ai_report(result)
+            
+    except Exception as e:
+        console.print(f"[bold red]AI authentication error:[/bold red] {e}", file=sys.stderr)
         sys.exit(1)
 
 

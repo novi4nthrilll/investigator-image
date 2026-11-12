@@ -95,4 +95,45 @@ python3 run.py stego <path_gambar> -x ./hasil_carving/
 python3 run.py stego <path_gambar> -d ./lsb_plane.png
 ```
 
+---
+
+## 🤖 Modul 3: AI-Generated & Deepfake Authenticator
+
+Modul ketiga mengidentifikasi apakah sebuah gambar dibuat oleh AI generatif (Midjourney, Stable Diffusion, DALL-E, Flux, ComfyUI) atau merupakan jepretan kamera optik asli:
+
+1. **2D FFT Frequency Magnitude Spectrum:**
+   - Mentransformasi gambar ke domain frekuensi 2 dimensi menggunakan 2D Fast Fourier Transform (FFT).
+   - Mendeteksi *periodic grid spikes* / lonjakan frekuensi harmonik simetris yang tercipta akibat proses *upsampling* konvolusi atau *latent patch diffusion*.
+   - Mengukur deviasi kurva peluruhan radial dari hukum spektrum optik alami $1/f^\alpha$.
+2. **C2PA / Content Credentials Provenance Scanner:**
+   - Memeriksa struktur manifest JUMBF/C2PA digital untuk memverifikasi klaim `trainedAlgorithmicMedia` atau `c2pa.ai_generated` dari Adobe Firefly, Microsoft Designer, atau kamera tersertifikasi.
+3. **Automated Generation Prompt Extractor (`-p`):**
+   - Mendeteksi dan mengekstrak prompt lengkap, negative prompt, seed, model checkpoint, dan konfigurasi sampler dari chunk PNG (`parameters`, `workflow`, `prompt`) ke dalam file teks.
+4. **2D FFT Spectrum Visual Dump (`-f`):**
+   - Menyimpan visualisasi spektrum frekuensi 2D ke dalam file gambar untuk analisis visual para peneliti forensik.
+5. **Chroma & Saturation Distribution Analysis:**
+   - Mengukur konsentrasi saturasi ekstrem dan distribusi varians warna pada ruang YCbCr yang sering kali tidak wajar pada model difusi.
+
+---
+
+### Cara Menjalankan Modul 3:
+
+```bash
+# Bantuan command ai
+python3 run.py ai --help
+
+# Autentikasi gambar AI biasa
+python3 run.py ai <path_gambar>
+
+# Autentikasi sambil dump peta spektrum frekuensi 2D FFT
+python3 run.py ai <path_gambar> -f ./fft_spectrum.png
+
+# Autentikasi dan ekstrak prompt AI generator ke file
+python3 run.py ai <path_gambar> -p ./prompt_hasil_ekstrak.txt
+
+# Mode JSON
+python3 run.py ai <path_gambar> --json
+```
+
+
 
