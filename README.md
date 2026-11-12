@@ -57,3 +57,42 @@ python3 run.py tamper tests/samples/test_clean.jpg
 python3 run.py tamper tests/samples/test_tampered.jpg -o tests/samples/tampered_heatmap.png
 ```
 
+---
+
+## 🕵️ Modul 2: Stego & Malicious Payload Analyzer
+
+Modul kedua berfokus pada deteksi penyembunyian data rahasia (*steganography*), file polyglot, dan penyusupan payload malware di balik file gambar:
+
+1. **Trailing Bytes & Polyglot Detection:**
+   - Memeriksa batas resmi *End-Of-File* (EOF) dari format JPEG (`FF D9`), PNG (`IEND`), dan GIF (`3B`).
+   - Mendeteksi byte tambahan (*overlay*) yang diselundupkan di ekor file gambar.
+   - Mengenali signature file rahasia: ZIP, RAR, 7Z, GZIP, PDF, Windows PE Executable (MZ), Linux ELF, PHP, JavaScript, dan Shell scripts.
+2. **Automated Payload Carving (`-x`):**
+   - Otomatis mengekstrak dan memotong (*carve*) file arsip atau script tersembunyi menjadi file mandiri yang siap dianalisis tim insiden.
+3. **Least Significant Bit (LSB) & Bitplane Entropy:**
+   - Menguji keacakan bitplane 0 (LSB) pada setiap channel RGB menggunakan Shannon Entropy.
+   - Uji Chi-Square ($\chi^2$) *Pairs of Values* (PoV) untuk membuktikan apakah frekuensi piksel telah diratakan oleh payload stego terenkripsi.
+4. **LSB Bitplane Visual Dump (`-d`):**
+   - Menyimpan visualisasi biner bitplane 0 untuk inspeksi visual langsung (berguna untuk CTF atau menemukan watermark tersembunyi).
+5. **EXIF & Metadata Security Auditor:**
+   - Memindai komentar JPEG dan tag EXIF dari keberadaan string Base64 panjang, perintah shell (`powershell`, `cmd`, `curl`, `bash`), script injection, dan URL C2 berbasis IP.
+
+---
+
+### Cara Menjalankan Modul 2:
+
+```bash
+# Bantuan command stego
+python3 run.py stego --help
+
+# Pindai steganografi biasa
+python3 run.py stego <path_gambar>
+
+# Pindai dan ekstrak payload tersembunyi (carving)
+python3 run.py stego <path_gambar> -x ./hasil_carving/
+
+# Pindai sambil dump visualisasi LSB bitplane 0
+python3 run.py stego <path_gambar> -d ./lsb_plane.png
+```
+
+

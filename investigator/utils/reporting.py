@@ -86,3 +86,87 @@ def print_tamper_report(result: Dict[str, Any]) -> None:
         console.print(f"\n[bold green]✓ Forensic Heatmap Artifact exported:[/bold green] [underline]{result['heatmap_path']}[/underline]")
     console.print()
 
+
+def print_stego_report(result: Dict[str, Any]) -> None:
+    """Renders a comprehensive steganography and malicious payload audit report."""
+    info = result["image_info"]
+    score = result["overall_score"]
+    verdict = result["verdict"]
+    color = result["risk_color"]
+    
+    # 1. Header Banner
+    banner_text = Text()
+    banner_text.append("🕵️ STEGO & PAYLOAD ANALYZER ", style="bold bright_magenta")
+    banner_text.append("| Malicious Concealment & Polyglot Hunter\n", style="bold white")
+    banner_text.append("Target: ", style="dim")
+    banner_text.append(f"{info['file_name']}", style="bold yellow")
+    banner_text.append(f" ({info['dimensions'][0]}x{info['dimensions'][1]} px, {info['format']}, {round(info['file_size_bytes']/1024, 1)} KB)", style="dim")
+    console.print(Panel(banner_text, box=box.ROUNDED, border_style="bright_magenta"))
+    
+    # 2. Forensic Metadata & Integrity Table
+    meta_table = Table(title="🛡️ File Integrity & Hash Digest", box=box.SIMPLE_HEAVY, show_header=True)
+    meta_table.add_column("Property", style="cyan", width=18)
+    meta_table.add_column("Value", style="white")
+    
+    meta_table.add_row("SHA-256", f"[bold green]{info['hashes']['sha256']}[/bold green]")
+    meta_table.add_row("MD5", info['hashes']['md5'])
+    meta_table.add_row("Total File Size", f"{info['file_size_bytes']} bytes")
+    console.print(meta_table)
+    console.print()
+    
+    # 3. Overall Verdict Gauge
+    score_bar_filled = int(score / 5)
+    score_bar_empty = 20 - score_bar_filled
+    bar_str = "█" * score_bar_filled + "░" * score_bar_empty
+    
+    verdict_panel_content = Text()
+    verdict_panel_content.append(f"VERDICT: {verdict}\n", style=f"bold {color}")
+    verdict_panel_content.append(f"Payload Concealment Risk: [{bar_str}] {score}%\n\n", style=f"bold {color}")
+    
+    for finding in result["findings"]:
+        verdict_panel_content.append(f"  • {finding}\n", style="white")
+        
+    console.print(Panel(verdict_panel_content, title="[bold]Steganographic Threat Assessment[/bold]", border_style=color, box=box.DOUBLE))
+    console.print()
+    
+    # 4. Detailed Module Analysis Breakdown Table
+    mod = result["modules"]
+    breakdown_table = Table(title="🔬 Steganography & Payload Vectors", box=box.ROUNDED)
+    breakdown_table.add_column("Vector", style="bold bright_cyan", width=26)
+    breakdown_table.add_column("Score", justify="center", width=12)
+    breakdown_table.add_column("Detection Status / Signatures", style="white")
+    
+    # Overlay Row
+    ov = mod["overlay"]
+    ov_status = f"Trailing Bytes: {ov['trailing_bytes']} B (Entropy: {ov['entropy']}/8.0)"
+    if ov["payloads"]:
+        payload_names = ", ".join([p["type"] for p in ov["payloads"][:2]])
+        ov_status += f" | Signatures: [bold red]{payload_names}[/bold red]"
+    ov_style = "red" if ov["score"] > 50 else ("yellow" if ov["score"] > 20 else "green")
+    breakdown_table.add_row("Trailing Bytes / Polyglot", f"[{ov_style}]{ov['score']}%[/{ov_style}]", ov_status)
+    
+    # LSB Row
+    lsb = mod["lsb"]
+    lsb_status = f"Avg Bit-0 Entropy: {lsb['avg_entropy']}/1.0 | Stego Prob: {round(lsb['stego_probability']*100, 1)}%"
+    lsb_style = "red" if lsb["score"] > 50 else ("yellow" if lsb["score"] > 25 else "green")
+    breakdown_table.add_row("LSB Bitplane Entropy", f"[{lsb_style}]{lsb['score']}%[/{lsb_style}]", lsb_status)
+    
+    # Metadata Row
+    meta = mod["metadata"]
+    meta_status = f"{len(meta['findings'])} suspicious finding(s) across {meta['tags_count']} tags/comments"
+    meta_style = "red" if meta["score"] > 50 else ("yellow" if meta["score"] > 20 else "green")
+    breakdown_table.add_row("EXIF / Metadata Payloads", f"[{meta_style}]{meta['score']}%[/{meta_style}]", meta_status)
+    
+    console.print(breakdown_table)
+    
+    # 5. Carved Artifacts Output
+    if result.get("carved_files"):
+        console.print("\n[bold green]📦 Extracted Carved Payloads:[/bold green]")
+        for c in result["carved_files"]:
+            console.print(f"  • [underline cyan]{c}[/underline cyan]")
+            
+    if result.get("dumped_lsb_path"):
+        console.print(f"[bold green]✓ LSB Bitplane 0 Visualization dumped:[/bold green] [underline]{result['dumped_lsb_path']}[/underline]")
+    console.print()
+
+
